@@ -1,28 +1,28 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
-@Entity('order') // Название таблицы в единственном числе, как у тебя
+@Entity('orders')
 export class Order {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @ManyToOne(() => User) // Просто связь, без ссылки на обратное поле
+user: User;
 
   @Column()
   address: string;
 
   @Column()
-  deliveryType: string; // 'delivery' или 'pickup'
+  deliveryType: string;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0 })
-  totalAmount: number;
+  @Column('json') // ВАЖНО: используй 'json' для хранения массива товаров
+  items: any[];
 
-  @Column({ default: 'pending' }) // Добавил это поле, чтобы сервис не выдавал ошибку!
+  @Column('decimal', { default: 0 })
+  totalPrice: number;
+
+  @Column({ default: 'pending' })
   status: string;
-
-  @ManyToOne(() => User, (user) => user.id)
-  user: User;
-
-  @Column('simple-json', { nullable: true })
-  items: any;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,16 +1,26 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity() // ОБЯЗАТЕЛЬНО
-export class Product { // ОБЯЗАТЕЛЬНО export
+@Entity('products') // Название таблицы в БД
+export class Product {
+  // ВОТ ЭТОГО ПОЛЯ У ВАС НЕ ХВАТАЛО:
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   name: string;
 
-  @Column('decimal')
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 
-  @Column()
+  @Column({ default: 0 })
   stock: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

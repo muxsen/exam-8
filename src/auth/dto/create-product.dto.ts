@@ -1,42 +1,30 @@
+// src/products/dto/create-product.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
 
 export class CreateProductDto {
-  @ApiProperty({ 
-    example: 'iPhone 15 Pro', 
-    description: 'Наименование товара' 
-  })
+  @ApiProperty({ example: 'Клавиатура' })
+  @IsString()
+  @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ 
-    example: 'Флагманский смартфон от Apple', 
-    description: 'Описание товара',
-    required: false 
-  })
-  description?: string;
+  @ApiProperty({ example: 'Описание' })
+  @IsString()
+  @IsNotEmpty()
+  description: string;
 
-  @ApiProperty({ 
-    example: 120000, 
-    description: 'Цена товара в сумах или USD' 
-  })
+  @ApiProperty({ example: 100 })
+  @IsNumber()
+  @Min(0)
   price: number;
 
-  @ApiProperty({ 
-    example: 15, 
-    description: 'Количество товара на складе' 
-  })
+  @ApiProperty({ example: 10 })
+  @IsNumber()
+  @Min(0)
   stock: number;
 
-  @ApiProperty({ 
-    example: 'Электроника', 
-    description: 'Категория товара',
-    required: false 
-  })
-  category?: string;
-
-  @ApiProperty({ 
-    example: 'https://example.com/image.jpg', 
-    description: 'Ссылка на изображение товара',
-    required: false 
-  })
-  imageUrl?: string;
+  @ApiProperty({ example: 'Категория' })
+  @IsString()
+  @IsNotEmpty()
+  category: string;
 }

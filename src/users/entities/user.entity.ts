@@ -17,10 +17,10 @@ export class User {
   @Column({ default: false })
   is2FAEnabled: boolean;
 
-  @Column({ nullable: true, type: 'varchar' }) // Разрешаем null
+  @Column({ nullable: true, type: 'varchar' })
   twoFASecret: string | null;
 
-  @Column({ nullable: true, type: 'varchar' }) // Разрешаем null
+  @Column({ nullable: true, type: 'varchar' }) 
   refreshTokenHash: string | null;
 
   @CreateDateColumn()

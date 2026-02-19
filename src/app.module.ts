@@ -1,32 +1,34 @@
+// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { AppController } from './app.controller'; // если он есть
+import { AppService } from './app.service';       // наш "виновник"
+
+// Твои другие модули
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 
-import { User } from './users/entities/user.entity';
-import { Product } from './products/entities/product.entity';
-import { Order } from './orders/entities/order.entity';
-
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env', // Явно указываем файл
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
+    // src/app.module.ts
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'db.sqlite',
-      entities: [User, Product, Order],
+      database: './db.sqlite',
+      // Вместо списка [User, Product...] используй паттерн:
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
-      logging: false, // Отключил логи, чтобы не засорять консоль
     }),
     AuthModule,
     UsersModule,
     ProductsModule,
     OrdersModule,
+    // УДАЛИ AppService ОТСЮДА!
   ],
+  controllers: [AppController],
+  providers: [AppService], // AppService ДОЛЖЕН БЫТЬ ЗДЕСЬ
 })
-export class AppModule {}
+export class AppModule { }

@@ -6,7 +6,7 @@ import { ProductsController } from './products.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Product])],
-  controllers: [ProductsController], // Это имя должно совпадать с именем в контроллере
+  controllers: [ProductsController],
   providers: [ProductsService],
   exports: [ProductsService],
 })

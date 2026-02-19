@@ -1,26 +1,47 @@
-import { Controller, Post, Body, Get, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { CreateOrderDto } from './dto/create-order.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('Заказы')
-@ApiBearerAuth() // <--- ДОБАВЬ ЭТО: чтобы появился значок замка в Swagger
+@ApiBearerAuth('JWT-auth')
 @Controller('orders')
-@UseGuards(JwtAuthGuard) // Защита на весь контроллер
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'Оформление нового заказа' })
-  async create(@Request() req, @Body() dto: any) {
-    const userId = req.user.id; // Здесь берется ID из токена
-    return this.ordersService.create(userId, dto);
+  async create(@Body() createOrderDto: CreateOrderDto, @Req() req: any) {
+    const userId = req.user.id;
+    return this.ordersService.create(userId, createOrderDto);
   }
 
-  @Get('my')
-  @ApiOperation({ summary: 'Получить историю заказов текущего пользователя' })
-  async findMyOrders(@Request() req) {
-    const userId = req.user.id;
-    return this.ordersService.findAllByUser(userId);
+  // НОВЫЙ МЕТОД: Изменение количества (Пункт: Countni oshira olishi)
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/quantity')
+  @ApiOperation({ summary: 'Изменить количество товара в заказе' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        quantity: { type: 'number', example: 5 }
+      }
+    }
+  })
+  async updateQuantity(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('quantity') quantity: number,
+  ) {
+    return this.ordersService.updateQuantity(id, quantity);
+  }
+
+  // НОВЫЙ МЕТОД: Удаление заказа (Пункт: Harid qilingan ro’yhatdan o’chira olishi)
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  @ApiOperation({ summary: 'Отменить/удалить заказ' })
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return this.ordersService.remove(id);
   }
 }

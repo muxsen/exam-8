@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Param, Delete } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto'; // Импортируем наш DTO
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { CreateProductDto } from './dto/create-product.dto';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Товары')
 @Controller('products')
@@ -10,19 +10,20 @@ export class ProductsController {
 
   @Post()
   @ApiOperation({ summary: 'Создать новый товар' })
-  // Благодаря CreateProductDto, Swagger сам нарисует все поля
-  async create(@Body() dto: CreateProductDto) {
-    return this.productsService.create(dto);
+  // ВАЖНО: Декоратор @Body() должен стоять прямо перед dto
+  async create(@Body() createProductDto: CreateProductDto) {
+    console.log('Данные в контроллере:', createProductDto); // Добавил лог для проверки в терминале
+    return this.productsService.create(createProductDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Получить все товары (с поиском по имени)' })
+  @ApiOperation({ summary: 'Получить все товары' })
   async findAll(@Query('search') search: string) {
     return this.productsService.findAll(search);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Получить информацию о товаре по ID' })
+  @ApiOperation({ summary: 'Получить товар по ID' })
   async findOne(@Param('id') id: string) {
     return this.productsService.findOne(+id);
   }

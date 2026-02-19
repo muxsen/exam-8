@@ -1,36 +1,71 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order)
-    private ordersRepository: Repository<Order>,
+    private readonly ordersRepository: Repository<Order>,
   ) {}
 
-  async create(userId: number, dto: any) {
-    const newOrder = this.ordersRepository.create({
-      ...dto,
-      user: { id: userId },
-      status: 'pending',
-    });
-    return await this.ordersRepository.save(newOrder);
-  }
-
-  // ИСПРАВЛЕНО: Убраны сложные связи, которые могли вызывать 500 ошибку
-  async findAllByUser(userId: number) {
+  // Оформление заказа
+  async create(userId: number, dto: CreateOrderDto) {
     try {
-      return await this.ordersRepository.find({
-        where: { user: { id: userId } },
-        // Если у тебя нет связи 'items' в Entity, это вызывало 500 ошибку
-        // relations: ['items'], 
-        order: { id: 'DESC' }
+      const orderData: any = {
+        user: { id: userId },
+        address: dto.address,
+        deliveryType: dto.deliveryType,
+        items: dto.items,
+        status: 'pending',
+        totalPrice: 0,
+      };
+
+      const result = await this.ordersRepository.insert(orderData);
+      const orderId = result.identifiers[0].id;
+
+      return await this.ordersRepository.findOne({
+        where: { id: orderId },
+        relations: ['user'],
       });
     } catch (error) {
-      console.error('Ошибка при поиске заказов:', error);
-      return []; // Возвращаем пустой массив вместо падения сервера
+      throw new BadRequestException('Не удалось сохранить заказ: ' + error.message);
     }
+  }
+
+  // Изменение количества (Пункт: Countni oshira olishi)
+  async updateQuantity(id: number, quantity: number) {
+    const order = await this.ordersRepository.findOne({ where: { id } });
+    
+    if (!order) {
+      throw new NotFoundException('Заказ не найден');
+    }
+
+    if (order.items && order.items.length > 0) {
+      // Обновляем количество в первом товаре массива для примера
+      order.items[0].quantity = quantity;
+    }
+
+    // Сохраняем обновленный объект (save сделает UPDATE, так как есть ID)
+    return await this.ordersRepository.save(order);
+  }
+
+  // Удаление заказа (Пункт: Harid qilingan ro’yhatdan o’chira olishi)
+  async remove(id: number) {
+    const order = await this.ordersRepository.findOne({ where: { id } });
+    
+    if (!order) {
+      throw new NotFoundException('Заказ не найден');
+    }
+
+    await this.ordersRepository.remove(order);
+    return { message: `Заказ #${id} успешно удален` };
+  }
+
+  // Получение всех заказов
+  async findAll() {
+    return await this.ordersRepository.find({ relations: ['user'] });
   }
 }

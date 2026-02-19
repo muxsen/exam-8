@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
+// ОБЯЗАТЕЛЬНО должно быть слово export
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private configService: ConfigService) {
     super({
@@ -14,16 +15,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // Проверка структуры payload
     if (!payload || !payload.sub) {
       throw new UnauthorizedException('Невалидный токен');
     }
     
-    // Возвращаем объект, который попадет в req.user
-    // Добавляем и id, и userId для совместимости со всеми модулями
+    // Эти данные попадут в req.user
     return { 
-      id: payload.sub, 
       userId: payload.sub, 
+      email: payload.email, 
       role: payload.role 
     };
   }
